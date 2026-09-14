@@ -1,0 +1,10 @@
+disease,medicine,category,information
+Fungal infection,Antifungal treatment,reference,Reference category only; treatment should be selected by a qualified healthcare professional.
+Allergy,Antihistamine treatment,reference,Reference category only; treatment should be selected by a qualified healthcare professional.
+Diabetes,Diabetes management,reference,Reference category only; treatment should be selected by a qualified healthcare professional.
+Hypertension,Blood-pressure management,reference,Reference category only; treatment should be selected by a qualified healthcare professional.
+Common Cold,Symptomatic cold care,supportive care,Reference category only; treatment should be selected by a qualified healthcare professional.
+Migraine,Migraine management,reference,Reference category only; treatment should be selected by a qualified healthcare professional.
+Asthma,Asthma management,supportive care,Reference category only; treatment should be selected by a qualified healthcare professional.
+Pneumonia,Pneumonia management,reference,Reference category only; treatment should be selected by a qualified healthcare professional.
+Heart disease,Cardiac care,reference,Reference category only; treatment should be selected by a qualified healthcare professional.

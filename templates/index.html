@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MediReco — Personalized Healthcare ML</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div><strong>🩺 MediReco</strong><span>Personalized Healthcare & Medicine Recommendation System</span></div>
+  <a href="/health" target="_blank">API health</a>
+</header>
+<main class="container">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">DATA SCIENCE / MACHINE LEARNING PROJECT</p>
+      <h1>Personalized Health Decision Support</h1>
+      <p>Enter a small patient profile and symptom set to see a model-based condition ranking, risk estimate, and reference medicine information.</p>
+    </div>
+    <div class="notice"><strong>Important:</strong> This is an educational ML project. It does not diagnose illness or prescribe medicines. Seek professional care for real symptoms.</div>
+  </section>
+
+  <section class="card">
+    <h2>Patient profile</h2>
+    <form id="healthForm">
+      <div class="grid">
+        <label>Age<input name="age" type="number" min="0" max="120" value="25" required></label>
+        <label>Gender<select name="gender"><option>female</option><option selected>male</option><option>other</option></select></label>
+        <label>Blood pressure level (dataset code)<input name="blood_pressure" type="number" min="0" max="10" value="1" required></label>
+        <label>Cholesterol level (dataset code)<input name="cholesterol_level" type="number" min="0" max="10" value="1" required></label>
+        <label>Fever<select name="fever"><option>no</option><option selected>yes</option></select></label>
+        <label>Cough<select name="cough"><option>no</option><option selected>yes</option></select></label>
+        <label>Fatigue<select name="fatigue"><option>no</option><option selected>yes</option></select></label>
+        <label>Difficulty breathing<select name="difficulty_breathing"><option selected>no</option><option>yes</option></select></label>
+        <label>Pregnancy (safety flag)<select name="pregnancy"><option selected value="false">No</option><option value="true">Yes</option></select></label>
+        <label>Known allergy / medicine name (optional)<input name="allergy" placeholder="e.g. penicillin"></label>
+      </div>
+      <button type="submit">Analyze profile</button>
+    </form>
+  </section>
+
+  <section id="results" class="results hidden">
+    <div class="card">
+      <h2>Model results</h2>
+      <div id="predictions"></div>
+      <div id="risk"></div>
+    </div>
+    <div class="card">
+      <h2>Reference medicine information</h2>
+      <p class="muted">Candidates below come from the uploaded project knowledge base. They are informational only and are not individualized prescriptions.</p>
+      <div id="medicines"></div>
+    </div>
+  </section>
+</main>
+<script>
+const form = document.getElementById('healthForm');
+const results = document.getElementById('results');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.age = Number(data.age);
+  data.blood_pressure = Number(data.blood_pressure);
+  data.cholesterol_level = Number(data.cholesterol_level);
+  data.pregnancy = data.pregnancy === 'true';
+
+  const res = await fetch('/api/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+  const out = await res.json();
+  results.classList.remove('hidden');
+  if (!res.ok) { document.getElementById('predictions').innerHTML = `<div class="error">${out.error}</div>`; return; }
+
+  document.getElementById('predictions').innerHTML = out.predictions.map((p,i) =>
+    `<div class="prediction"><span>#${i+1} ${p.disease}</span><strong>${(p.probability*100).toFixed(1)}%</strong></div>`).join('');
+  const risk = out.risk;
+  document.getElementById('risk').innerHTML = `<div class="risk"><span>Estimated dataset risk class</span><strong>${risk.risk_level}</strong></div>`;
+  document.getElementById('medicines').innerHTML = out.medicine_information.length ? out.medicine_information.map(m =>
+    `<article class="medicine"><h3>${m.medicine}</h3><small>${m.category}</small><p>${m.information}</p><div class="safety">${m.safety_note}</div></article>`).join('') : '<p>No reference items are available for the top predicted class.</p>';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+{
+  "disease_accuracy": 0.7066666666666667,
+  "disease_balanced_accuracy": 0.1440329218106996,
+  "risk_accuracy": 0.5333333333333333,
+  "dataset_rows": 300,
+  "dataset_deduplicated_rows": 300,
+  "disease_classes": [
+    "Asthma",
+    "Bronchitis",
+    "Diabetes",
+    "Hypertension",
+    "Influenza",
+    "Migraine",
+    "Osteoporosis",
+    "Other",
+    "Stroke"
+  ],
+  "disease_report": {
+    "Asthma": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 4.0
+    },
+    "Bronchitis": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "Diabetes": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "Hypertension": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "Influenza": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "Migraine": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 3.0
+    },
+    "Osteoporosis": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 3.0
+    },
+    "Other": {
+      "precision": 0.7323943661971831,
+      "recall": 0.9629629629629629,
+      "f1-score": 0.832,
+      "support": 54.0
+    },
+    "Stroke": {
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "f1-score": 0.5,
+      "support": 3.0
+    },
+    "accuracy": 0.7066666666666667,
+    "macro avg": {
+      "precision": 0.19248826291079812,
+      "recall": 0.1440329218106996,
+      "f1-score": 0.148,
+      "support": 75.0
+    },
+    "weighted avg": {
+      "precision": 0.5673239436619718,
+      "recall": 0.7066666666666667,
+      "f1-score": 0.6190399999999999,
+      "support": 75.0
+    }
+  },
+  "risk_report": {
+    "High": {
+      "precision": 0.3076923076923077,
+      "recall": 0.2,
+      "f1-score": 0.24242424242424243,
+      "support": 20.0
+    },
+    "Low": {
+      "precision": 0.5,
+      "recall": 0.07692307692307693,
+      "f1-score": 0.13333333333333333,
+      "support": 13.0
+    },
+    "Medium": {
+      "precision": 0.5833333333333334,
+      "recall": 0.8333333333333334,
+      "f1-score": 0.6862745098039216,
+      "support": 42.0
+    },
+    "accuracy": 0.5333333333333333,
+    "macro avg": {
+      "precision": 0.46367521367521364,
+      "recall": 0.3700854700854701,
+      "f1-score": 0.35401069518716577,
+      "support": 75.0
+    },
+    "weighted avg": {
+      "precision": 0.49538461538461537,
+      "recall": 0.5333333333333333,
+      "f1-score": 0.47207130124777186,
+      "support": 75.0
+    }
+  }
+}
