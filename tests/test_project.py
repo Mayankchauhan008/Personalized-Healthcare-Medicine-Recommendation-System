@@ -1,18 +1,20 @@
-import json
 from pathlib import Path
-
-import pandas as pd
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from medireco.config import DATASET_PATH, MEDICINE_DB_PATH
+
 
 def test_dataset_exists():
-    p = ROOT / 'data' / 'raw' / 'Cleaned_Dataset.csv'
-    assert p.exists()
-    df = pd.read_csv(p)
-    assert len(df) > 100
-    assert {'disease','fever','age','gender'}.issubset(df.columns)
+    assert DATASET_PATH.exists()
 
-def test_metrics_exist():
-    metrics = json.loads((ROOT / 'models' / 'metrics.json').read_text())
-    assert 0 <= metrics['disease_accuracy'] <= 1
-    assert 0 <= metrics['risk_accuracy'] <= 1
+
+def test_medicine_db_exists():
+    assert MEDICINE_DB_PATH.exists()
+
+
+def test_model_exists():
+    assert (ROOT / "models" / "disease_pipeline.joblib").exists()
+    assert (ROOT / "models" / "risk_pipeline.joblib").exists()

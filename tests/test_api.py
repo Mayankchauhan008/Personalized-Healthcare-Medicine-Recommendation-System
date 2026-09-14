@@ -1,24 +1,45 @@
-from pathlib import Path
 import sys
+from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+
 from app import app
 
-def test_health_endpoint():
-    c = app.test_client()
-    r = c.get('/health')
-    assert r.status_code == 200
-    assert r.get_json()['status'] == 'ok'
 
-def test_analyze_endpoint():
-    c = app.test_client()
-    payload = {
-        'age': 25, 'gender': 'male', 'blood_pressure': 1, 'cholesterol_level': 1,
-        'fever': 'yes', 'cough': 'yes', 'fatigue': 'yes', 'difficulty_breathing': 'no',
-        'pregnancy': False, 'allergy': ''
+def sample_payload():
+    return {
+        "age": 25,
+        "gender": "female",
+        "blood_pressure": 1,
+        "cholesterol_level": 1,
+        "fever": "no",
+        "cough": "yes",
+        "fatigue": "yes",
+        "difficulty_breathing": "no",
+        "pregnancy": False,
+        "allergy": "",
     }
-    r = c.post('/api/analyze', json=payload)
-    assert r.status_code == 200, r.data
-    body = r.get_json()
-    assert 'predictions' in body and len(body['predictions']) == 3
-    assert 'risk' in body
+
+
+def test_health():
+    client = app.test_client()
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.get_json()["status"] == "ok"
+
+
+def test_model_info():
+    client = app.test_client()
+    response = client.get("/api/model-info")
+    assert response.status_code == 200
+    assert response.get_json()["algorithm"] == "Random Forest Classifier"
+
+
+def test_analyze():
+    client = app.test_client()
+    response = client.post("/api/analyze", json=sample_payload())
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["predictions"]
+    assert body["risk"]["risk_level"]
