@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MediReco | Login</title>
+  <link rel="stylesheet" href="/static/auth.css">
+</head>
+<body class="auth-body">
+  <div class="auth-shell">
+    <div class="auth-brand">
+      <div class="brand-icon">✚</div>
+      <div><div class="brand">MediReco</div><div class="brand-sub">Personalized Healthcare ML</div></div>
+    </div>
+
+    <section class="auth-card">
+      <div class="auth-intro">
+        <span class="auth-pill">SECURE ACCESS</span>
+        <h1>Welcome back</h1>
+        <p>Sign in to access your personalized healthcare ML dashboard.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="/login" class="auth-form">
+        <label>Email address
+          <input type="email" name="email" value="{{ email or '' }}" placeholder="you@example.com" autocomplete="email" required>
+        </label>
+        <label>Password
+          <input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+        </label>
+        <button class="auth-primary" type="submit">Login <span>→</span></button>
+      </form>
+
+      <div class="auth-divider"><span>NEW TO MEDIRECO?</span></div>
+      <a class="auth-secondary" href="/register">Create an account</a>
+
+      <div class="auth-note"><b>Demo project</b><br>Account data is stored locally in SQLite for this academic project.</div>
+    </section>
+
+    <p class="auth-footer">Educational ML project • Not medical diagnosis or prescription</p>
+  </div>
+</body>
+</html>

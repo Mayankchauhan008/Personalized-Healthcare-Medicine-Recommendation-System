@@ -78,3 +78,14 @@ The PDF contains:
 - educational-use disclaimer
 
 The PDF is generated on demand by `src/medireco/report.py` and served through `POST /api/report`.
+
+## Authentication
+
+The application now includes working Login and Register pages using SQLite and password hashing.
+
+- `/register` creates a local account.
+- Successful registration redirects to `/login` and displays a green success message.
+- `/login` authenticates the account and starts a session.
+- `/logout` clears the session.
+- The healthcare dashboard and analysis/report APIs require login.
+- User accounts are stored in `instance/medireco_users.db`.

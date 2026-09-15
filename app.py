@@ -4,7 +4,7 @@ from pathlib import Path
 from io import BytesIO
 import sys
 
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Flask, jsonify, render_template, request, send_file, redirect, url_for, session, flash
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -13,8 +13,11 @@ from medireco.config import MEDICINE_DB_PATH
 from medireco.predictor import model_info, predict_disease, predict_risk
 from medireco.recommender import recommend_information
 from medireco.report import generate_checkup_pdf
+from medireco.auth import init_db, create_user, authenticate
 
 app = Flask(__name__)
+app.secret_key = "change-this-secret-key-in-production"
+init_db()
 
 REQUIRED = [
     "fever",
@@ -27,6 +30,20 @@ REQUIRED = [
     "cholesterol_level",
 ]
 BINARY_FIELDS = ["fever", "cough", "fatigue", "difficulty_breathing"]
+
+
+def login_required(view):
+    from functools import wraps
+
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if "user_id" not in session:
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Authentication required. Please log in."}), 401
+            return redirect(url_for("login", next=request.path))
+        return view(*args, **kwargs)
+
+    return wrapped
 
 
 def normalize(payload: dict) -> dict:
@@ -67,9 +84,76 @@ def normalize(payload: dict) -> dict:
     return out
 
 
+@app.get("/login")
+def login():
+    if "user_id" in session:
+        return redirect(url_for("index"))
+    return render_template("login.html")
+
+
+@app.post("/login")
+def login_post():
+    if "user_id" in session:
+        return redirect(url_for("index"))
+
+    email = request.form.get("email", "")
+    password = request.form.get("password", "")
+    user = authenticate(email, password)
+    if not user:
+        flash("Invalid email or password.", "error")
+        return render_template("login.html", email=email), 401
+
+    session.clear()
+    session["user_id"] = user["id"]
+    session["user_name"] = user["full_name"]
+    session["user_email"] = user["email"]
+    flash("Welcome back! Login successful.", "success")
+
+    next_url = request.args.get("next") or url_for("index")
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = url_for("index")
+    return redirect(next_url)
+
+
+@app.get("/register")
+def register():
+    if "user_id" in session:
+        return redirect(url_for("index"))
+    return render_template("register.html")
+
+
+@app.post("/register")
+def register_post():
+    full_name = request.form.get("full_name", "")
+    email = request.form.get("email", "")
+    password = request.form.get("password", "")
+    confirm_password = request.form.get("confirm_password", "")
+
+    if password != confirm_password:
+        flash("Passwords do not match.", "error")
+        return render_template("register.html", full_name=full_name, email=email), 400
+
+    success, message = create_user(full_name, email, password)
+    if not success:
+        flash(message, "error")
+        return render_template("register.html", full_name=full_name, email=email), 400
+
+    # This green success message is displayed on the login page.
+    flash("✓ Registration successful! Your account has been created. Please log in.", "success")
+    return redirect(url_for("login"))
+
+
+@app.get("/logout")
+def logout():
+    session.clear()
+    flash("You have been logged out.", "success")
+    return redirect(url_for("login"))
+
+
 @app.get("/")
+@login_required
 def index():
-    return render_template("index.html")
+    return render_template("index.html", user_name=session.get("user_name"), user_email=session.get("user_email"))
 
 
 @app.get("/health")
@@ -84,11 +168,13 @@ def health():
 
 
 @app.get("/api/model-info")
+@login_required
 def api_model_info():
     return jsonify(model_info())
 
 
 @app.get("/api/demo")
+@login_required
 def api_demo():
     return jsonify(
         {
@@ -159,6 +245,7 @@ def run_analysis(payload: dict) -> tuple[dict, dict]:
 
 
 @app.post("/api/analyze")
+@login_required
 def analyze():
     try:
         payload = request.get_json(force=True)
@@ -171,6 +258,7 @@ def analyze():
 
 
 @app.post("/api/report")
+@login_required
 def api_report():
     try:
         payload = request.get_json(force=True)

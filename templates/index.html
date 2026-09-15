@@ -18,8 +18,9 @@
     </div>
     <div class="top-actions">
       <span class="status-dot">● Model online</span>
+      <div class="user-chip"><span class="user-avatar">{{ (user_name or 'U')[0].upper() }}</span><span>{{ user_name or 'User' }}</span></div>
       <button class="ghost-btn" id="themeBtn" type="button">☾</button>
-      <a class="ghost-link" href="/health" target="_blank">API</a>
+      <a class="logout-link" href="/logout">Logout</a>
     </div>
   </header>
 
@@ -110,7 +111,7 @@
     <section id="results" class="results hidden">
       <div class="result-header">
         <div><span class="section-number">03</span><h2>Analysis dashboard</h2><p id="resultSummary">Model output is ready.</p></div>
-        <div class="result-actions"><button class="secondary-btn" id="copyBtn" type="button">Copy result</button><button class="secondary-btn" id="downloadBtn" type="button">Download JSON</button><button class="primary-btn" id="downloadPdfBtn" type="button">Download PDF report</button></div>
+        <div class="result-actions"><button class="secondary-btn" id="copyBtn" type="button">Copy result</button><button class="primary-btn" id="downloadPdfBtn" type="button">Download PDF report</button></div>
       </div>
 
       <div class="dashboard-grid">
@@ -332,13 +333,6 @@ $('heroDemoBtn').addEventListener('click', () => {
 $('demoResp').addEventListener('click', () => applyProfile((demoProfiles.respiratory || {}).data || {}));
 $('demoGeneral').addEventListener('click', () => applyProfile((demoProfiles.general || {}).data || {}));
 $('scrollBtn').addEventListener('click', () => $('howItWorks').scrollIntoView({behavior:'smooth'}));
-$('downloadBtn').addEventListener('click', () => {
-  if (!lastResult) return;
-  const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='medireco-analysis.json'; a.click(); URL.revokeObjectURL(url);
-});
-
 $('downloadPdfBtn').addEventListener('click', async () => {
   if (!lastResult) return;
   const btn = $('downloadPdfBtn');

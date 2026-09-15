@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MediReco | Register</title>
+  <link rel="stylesheet" href="/static/auth.css">
+</head>
+<body class="auth-body">
+  <div class="auth-shell">
+    <div class="auth-brand">
+      <div class="brand-icon">✚</div>
+      <div><div class="brand">MediReco</div><div class="brand-sub">Personalized Healthcare ML</div></div>
+    </div>
+
+    <section class="auth-card">
+      <div class="auth-intro">
+        <span class="auth-pill">CREATE ACCOUNT</span>
+        <h1>Join MediReco</h1>
+        <p>Create your account to use the healthcare ML dashboard.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="/register" class="auth-form" id="registerForm">
+        <label>Full name
+          <input type="text" name="full_name" value="{{ full_name or '' }}" placeholder="e.g. Mayank Chauhan" autocomplete="name" maxlength="80" required>
+        </label>
+        <label>Email address
+          <input type="email" name="email" value="{{ email or '' }}" placeholder="you@example.com" autocomplete="email" required>
+        </label>
+        <label>Password
+          <input id="password" type="password" name="password" placeholder="Minimum 6 characters" minlength="6" autocomplete="new-password" required>
+        </label>
+        <label>Confirm password
+          <input id="confirmPassword" type="password" name="confirm_password" placeholder="Re-enter your password" minlength="6" autocomplete="new-password" required>
+        </label>
+        <div id="passwordMessage" class="password-message"></div>
+        <button class="auth-primary" type="submit">Register <span>→</span></button>
+      </form>
+
+      <div class="auth-divider"><span>ALREADY REGISTERED?</span></div>
+      <a class="auth-secondary" href="/login">Back to login</a>
+
+      <div class="auth-note"><b>Privacy note</b><br>This demo stores a password hash, never the plain-text password.</div>
+    </section>
+
+    <p class="auth-footer">Educational ML project • Not medical diagnosis or prescription</p>
+  </div>
+<script>
+const password = document.getElementById('password');
+const confirmPassword = document.getElementById('confirmPassword');
+const message = document.getElementById('passwordMessage');
+const form = document.getElementById('registerForm');
+function checkPasswords(){
+  if (!confirmPassword.value) { message.textContent=''; message.className='password-message'; return true; }
+  if (password.value !== confirmPassword.value) { message.textContent='Passwords do not match'; message.className='password-message error'; return false; }
+  message.textContent='✓ Passwords match'; message.className='password-message success'; return true;
+}
+password.addEventListener('input', checkPasswords);
+confirmPassword.addEventListener('input', checkPasswords);
+form.addEventListener('submit', e => { if (!checkPasswords()) e.preventDefault(); });
+</script>
+</body>
+</html>
