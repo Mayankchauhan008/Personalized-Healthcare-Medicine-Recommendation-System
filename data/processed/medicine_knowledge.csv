@@ -1,10 +1,11 @@
-disease,medicine,category,information
-Fungal infection,Antifungal treatment,reference,Reference category only; suitability should be reviewed by a qualified professional.
-Allergy,Antihistamine treatment,reference,Reference category only; suitability should be reviewed by a qualified professional.
-Diabetes,Diabetes management,reference,Reference category only; suitability should be reviewed by a qualified professional.
-Hypertension,Blood-pressure management,reference,Reference category only; suitability should be reviewed by a qualified professional.
-Common Cold,Symptomatic cold care,supportive care,Reference category only; suitability should be reviewed by a qualified professional.
-Migraine,Migraine management,reference,Reference category only; suitability should be reviewed by a qualified professional.
-Asthma,Asthma management,supportive care,Reference category only; suitability should be reviewed by a qualified professional.
-Pneumonia,Pneumonia management,reference,Reference category only; suitability should be reviewed by a qualified professional.
-Heart disease,Cardiac care,reference,Reference category only; suitability should be reviewed by a qualified professional.
+disease,item,category,details
+Common Cold,Symptomatic cold care,Care guidance,General supportive care reference.
+Influenza,Fluids and rest,Care guidance,General supportive care reference.
+Asthma,Asthma management,Care guidance,Use a clinician-developed asthma action plan.
+Diabetes,Blood glucose monitoring,Care guidance,Follow the monitoring plan provided by a healthcare professional.
+Hypertension,Blood-pressure monitoring,Care guidance,Monitor according to a clinician's plan.
+Pneumonia,Clinical assessment,When to see doctor,Breathing symptoms or worsening illness need professional review.
+Heart disease,Cardiac care,Care guidance,Treatment should be guided by a qualified clinician.
+Migraine,Migraine management,Care guidance,Keep a symptom/headache diary and seek appropriate medical advice.
+Anxiety Disorders,Mental-health support,Care guidance,Professional assessment and evidence-based support are recommended.
+Depression,Mental-health support,Care guidance,Professional assessment and evidence-based support are recommended.

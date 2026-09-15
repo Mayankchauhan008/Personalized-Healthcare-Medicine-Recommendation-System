@@ -57,3 +57,24 @@ personalized_healthcare_ml/
 ## Safety / academic use
 
 This project is an ML demonstration, not a clinical decision system. Predictions are based on the supplied training dataset and should not be interpreted as medical diagnosis or prescription.
+
+## Evidence-linked medicine data
+The medicine knowledge base was upgraded with source-linked records from official MedlinePlus/NIH pages discovered through web research. Each row includes source URL, evidence level, clinician-review requirement, pregnancy note and allergy note. The application retrieves these references for the top predicted classes and never invents a medicine when the knowledge base has no supported entry.
+
+## PDF Check-up Report
+
+The dashboard includes a `Download PDF report` button after a successful analysis.
+
+The PDF contains:
+- patient/check-up inputs
+- selected symptoms and safety context
+- top 3 model predictions and probabilities
+- risk class and risk probabilities
+- medicine/treatment references returned by the evidence-linked knowledge base
+- care, lifestyle, urgent-care, and safety guidance when available
+- source names and URLs
+- Random Forest feature importance
+- model metrics and dataset limitations
+- educational-use disclaimer
+
+The PDF is generated on demand by `src/medireco/report.py` and served through `POST /api/report`.

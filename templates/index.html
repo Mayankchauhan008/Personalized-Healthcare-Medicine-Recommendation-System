@@ -59,6 +59,7 @@
         <form id="healthForm" novalidate>
           <div class="form-section-title">Basic information</div>
           <div class="grid three">
+            <label>Patient name <span>optional for PDF</span><input name="patient_name" type="text" maxlength="80" placeholder="e.g. Mayank"></label>
             <label>Age <span>years</span><input name="age" type="number" min="0" max="120" value="25" required></label>
             <label>Gender<select name="gender"><option selected>female</option><option>male</option><option>other</option></select></label>
             <label>Blood pressure <span>dataset code 0–10</span><input name="blood_pressure" type="number" min="0" max="10" step="1" value="1" required></label>
@@ -109,7 +110,7 @@
     <section id="results" class="results hidden">
       <div class="result-header">
         <div><span class="section-number">03</span><h2>Analysis dashboard</h2><p id="resultSummary">Model output is ready.</p></div>
-        <div class="result-actions"><button class="secondary-btn" id="copyBtn" type="button">Copy result</button><button class="primary-btn" id="downloadBtn" type="button">Download JSON</button></div>
+        <div class="result-actions"><button class="secondary-btn" id="copyBtn" type="button">Copy result</button><button class="secondary-btn" id="downloadBtn" type="button">Download JSON</button><button class="primary-btn" id="downloadPdfBtn" type="button">Download PDF report</button></div>
       </div>
 
       <div class="dashboard-grid">
@@ -138,8 +139,9 @@
       </div>
 
       <section class="card medicine-card">
-        <div class="card-title-row"><div><h3>Reference medicine information</h3><p class="muted">Retrieved from the project knowledge base for the top predicted class.</p></div><span class="pill small-pill">INFORMATION ONLY</span></div>
-        <div id="medicines" class="medicine-grid"></div>
+        <div class="card-title-row"><div><h3>Treatment & care reference</h3><p class="muted">The app checks the top predicted classes against the project knowledge base and shows reference items when available.</p></div><span class="pill small-pill">REFERENCE ONLY</span></div>
+        <div id="recommendationMessage" class="recommendation-message"></div>
+        <div id="recommendationGroups" class="recommendation-groups"></div>
       </section>
 
       <section class="card disclaimer-large">
@@ -239,16 +241,48 @@ function renderImportance(rows) {
 
 function renderProfileSummary(data) {
   const labels = {
-    age:'Age', gender:'Gender', blood_pressure:'BP code', cholesterol_level:'Cholesterol code',
+    patient_name:'Patient name', age:'Age', gender:'Gender', blood_pressure:'BP code', cholesterol_level:'Cholesterol code',
     fever:'Fever', cough:'Cough', fatigue:'Fatigue', difficulty_breathing:'Breathing difficulty'
   };
   $('profileSummary').innerHTML = Object.entries(labels).map(([key,label]) => `
     <div><span>${label}</span><b>${escapeHtml(String(data[key]))}</b></div>`).join('');
 }
 
-function renderMedicines(items) {
-  $('medicines').innerHTML = items.length ? items.map(m => `
-    <article class="medicine-item"><div class="medicine-icon">✚</div><div><h4>${escapeHtml(m.medicine)}</h4><span class="category">${escapeHtml(m.category)}</span><p>${escapeHtml(m.information)}</p><div class="safety-note">${escapeHtml(m.safety_note)}</div></div></article>`).join('') : `<div class="empty-state">No reference items were available for this predicted class.</div>`;
+function renderRecommendations(bundle) {
+  const message = bundle?.message || 'No reference information available.';
+  $('recommendationMessage').textContent = message;
+  const groups = bundle?.groups || [];
+  if (!groups.length) {
+    $('recommendationGroups').innerHTML = `<div class="empty-state"><b>No matched reference items</b><br><span>Use the result as an educational ML output and discuss symptoms or treatment options with a qualified clinician.</span></div>`;
+    return;
+  }
+
+  $('recommendationGroups').innerHTML = groups.map(group => `
+    <section class="recommendation-group">
+      <div class="rec-heading">
+        <div><span class="rec-kicker">MATCHED PREDICTION</span><h4>${escapeHtml(group.disease)}</h4></div>
+        <span class="confidence-badge">${Number(group.probability).toFixed(1)}%</span>
+      </div>
+
+      ${group.emergency?.length ? `
+        <div class="urgent-box"><b>Important safety note</b>${group.emergency.map(x => `<div>${escapeHtml(x.item)}</div>`).join('')}</div>` : ''}
+
+      <div class="rec-columns">
+        <div>
+          <h5>Medicine / treatment references</h5>
+          ${group.medicines?.length ? `<div class="medicine-grid compact">${group.medicines.map(m => `
+            <article class="medicine-item"><div class="medicine-icon">✚</div><div><h4>${escapeHtml(m.item)}</h4><span class="category">${escapeHtml(m.category)}</span><p>${escapeHtml(m.details)}</p><div class="safety-note">${escapeHtml(m.safety_note)}</div>${m.source_url ? `<a class="source-link" href="${escapeHtml(m.source_url)}" target="_blank" rel="noopener">Source: ${escapeHtml(m.source_name)} ↗</a>` : ''}</div></article>`).join('')}</div>` : `<div class="mini-empty">No medicine reference stored for this class.</div>`}
+        </div>
+        <div>
+          <h5>Other guidance</h5>
+          ${group.support?.length ? `<div class="support-list">${group.support.map(x => `<div class="support-item"><span>✓</span><div><b>${escapeHtml(x.item)}</b><small>${escapeHtml(x.category)}</small></div></div>`).join('')}</div>` : `<div class="mini-empty">No additional guidance stored.</div>`}
+
+          ${group.when_to_seek_care?.length ? `<div class="doctor-box"><b>When to seek professional care</b>${group.when_to_seek_care.map(x => `<p>${escapeHtml(x.details)}</p>${x.source_url ? `<a class="source-link" href="${escapeHtml(x.source_url)}" target="_blank" rel="noopener">Source: ${escapeHtml(x.source_name)} ↗</a>` : ''}`).join('')}</div>` : ''}
+          ${group.safety?.length ? `<div class="safety-list"><b>Safety notes</b>${group.safety.map(x => `<p>${escapeHtml(x.details)}</p>`).join('')}</div>` : ''}
+          ${group.food?.length ? `<div class="support-list"><h5>Food / lifestyle references</h5>${group.food.map(x => `<div class="support-item"><span>✓</span><div><b>${escapeHtml(x.item)}</b><small>${escapeHtml(x.details)}</small></div></div>`).join('')}</div>` : ''}
+        </div>
+      </div>
+    </section>`).join('');
 }
 
 function renderResult(out, data) {
@@ -262,7 +296,7 @@ function renderResult(out, data) {
   renderRisk(out.risk);
   renderImportance(out.model_info.feature_importance || []);
   renderProfileSummary(data);
-  renderMedicines(out.medicine_information || []);
+  renderRecommendations(out.recommendations || {});
   $('disclaimerText').textContent = out.disclaimer;
   setTimeout(() => results.scrollIntoView({behavior:'smooth', block:'start'}), 80);
 }
@@ -303,6 +337,40 @@ $('downloadBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='medireco-analysis.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+$('downloadPdfBtn').addEventListener('click', async () => {
+  if (!lastResult) return;
+  const btn = $('downloadPdfBtn');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Preparing PDF...';
+  try {
+    const res = await fetch('/api/report', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(lastResult.input)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'PDF generation failed.');
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'medireco-checkup-report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    formError.textContent = error.message;
+    formError.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
 });
 $('copyBtn').addEventListener('click', async () => {
   if (!lastResult) return;

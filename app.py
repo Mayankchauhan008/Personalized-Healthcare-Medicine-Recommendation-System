@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from io import BytesIO
 import sys
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -11,6 +12,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from medireco.config import MEDICINE_DB_PATH
 from medireco.predictor import model_info, predict_disease, predict_risk
 from medireco.recommender import recommend_information
+from medireco.report import generate_checkup_pdf
 
 app = Flask(__name__)
 
@@ -126,41 +128,59 @@ def api_demo():
     )
 
 
+def run_analysis(payload: dict) -> tuple[dict, dict]:
+    normalized = normalize(payload)
+    disease_predictions = predict_disease(normalized, top_k=3)
+    risk = predict_risk(normalized)
+    recommendations = recommend_information(
+        MEDICINE_DB_PATH,
+        disease_predictions,
+        pregnancy=bool(payload.get("pregnancy", False)),
+        allergy=str(payload.get("allergy", "")),
+        risk_level=str(risk.get("risk_level", "")),
+    )
+    context = {
+        "pregnancy": bool(payload.get("pregnancy", False)),
+        "allergy": str(payload.get("allergy", "")).strip(),
+    }
+    result = {
+        "disclaimer": (
+            "Educational decision support only. Not a diagnosis, prescription, "
+            "or substitute for professional medical care."
+        ),
+        "predictions": disease_predictions,
+        "risk": risk,
+        "recommendations": recommendations,
+        "medicine_information": recommendations.get("groups", []),
+        "model_info": model_info(),
+        "context": context,
+    }
+    return normalized, result
+
+
 @app.post("/api/analyze")
 def analyze():
     try:
         payload = request.get_json(force=True)
-        normalized = normalize(payload)
+        _, result = run_analysis(payload)
+        return jsonify(result)
+    except (ValueError, TypeError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        return jsonify({"error": f"Unexpected server error: {exc}"}), 500
 
-        disease_predictions = predict_disease(normalized, top_k=3)
-        risk = predict_risk(normalized)
-        top_disease = disease_predictions[0]["disease"]
 
-        candidates = recommend_information(
-            MEDICINE_DB_PATH,
-            top_disease,
-            pregnancy=bool(payload.get("pregnancy", False)),
-            allergy=str(payload.get("allergy", "")),
-        )
-
-        # User-entered context is kept separate from the model features.
-        context = {
-            "pregnancy": bool(payload.get("pregnancy", False)),
-            "allergy": str(payload.get("allergy", "")).strip(),
-        }
-
-        return jsonify(
-            {
-                "disclaimer": (
-                    "Educational decision support only. Not a diagnosis, prescription, "
-                    "or substitute for professional medical care."
-                ),
-                "predictions": disease_predictions,
-                "risk": risk,
-                "medicine_information": candidates,
-                "model_info": model_info(),
-                "context": context,
-            }
+@app.post("/api/report")
+def api_report():
+    try:
+        payload = request.get_json(force=True)
+        normalized, result = run_analysis(payload)
+        pdf_bytes = generate_checkup_pdf(normalized, result)
+        return send_file(
+            BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="medireco-checkup-report.pdf",
         )
     except (ValueError, TypeError) as exc:
         return jsonify({"error": str(exc)}), 400
