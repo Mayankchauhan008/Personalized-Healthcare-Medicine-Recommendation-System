@@ -155,7 +155,7 @@ def register_page() -> None:
     with center:
         st.markdown("## Register")
         with st.form("register_form"):
-            full_name = st.text_input("Full name", placeholder="Mayank Patel")
+            full_name = st.text_input("Full name", value="Adam", placeholder="Enter your full name")
             email = st.text_input("Email", placeholder="you@example.com")
             password = st.text_input("Password", type="password", placeholder="Minimum 6 characters")
             confirm = st.text_input("Confirm password", type="password")
