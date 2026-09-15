@@ -204,7 +204,8 @@ def analysis_form() -> None:
         st.markdown('<div class="section-title">Patient profile</div>', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            patient_name = st.text_input("Patient name", placeholder="Optional")
+            patient_name = user_name = st.session_state.user["full_name"]
+            st.text_input("Patient name", value=patient_name, disabled=True, help="Automatically taken from your registered account name.")
         with c2:
             age = st.number_input("Age", min_value=1, max_value=120, value=30)
         with c3:
